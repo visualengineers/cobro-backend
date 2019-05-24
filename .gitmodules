@@ -1,0 +1,3 @@
+[submodule "public/cobro-data"]
+	path = public/cobro-data
+	url = https://github.com/visualengineers/cobro-data
