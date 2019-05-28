@@ -12,6 +12,7 @@
     },
     "author": "tobiasrother",
     "dependencies": {
+        "cors": "^2.8.5",
         "express": "^4.17.0",
         "express-generator": "^4.16.1",
         "jsonschema": "^1.2.4"
