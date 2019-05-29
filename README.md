@@ -8,20 +8,25 @@ Backend for the Construction Kit Browser for Data Visualizations.
 
 Clone this repository  to your project directory
 
+```
+$ git clone --recurse-submodules <repository_url>
+```
+
+or
+
+```
+$ git clone <repository_url>
+$ git submodule update --init
+```
 
 you need installed
 
 - node (v12.2.0)
+- npm (6.9.0)
 
-- express (4.17.0)
-
-- JSONschema (1.2.4)
-
-for that you need the npm (6.9.0)
+Execute `npm install` in repository to install dependencies (e.g. express, JSONschema)
 
 ## Start
-
-
 
 Start the Server with 
 
@@ -29,9 +34,7 @@ Start the Server with
 node app.js
 ```
 
-the Server is now able to receive request on "localhost:3000/cobro-data"
-
-
+the Server is now able to receive request on "localhost:3000/data"
 
 ## Usage
 
@@ -43,8 +46,8 @@ All Response are in JSON (except the Request for the svg and png files)
 Request | Response | Example
 ---------|---------|-------
 **/blocks** | All blocks as array 
-/blocks/:id |A block by id   |/blocks/3030512
-/blocks/:id/:pic | A picture of a block by id and png or svg| /blocks/3030512/svg
+/blocks/:id |A block by id   |/blocks/3050212
+/blocks/:id/:pic | A picture of a block by id and png or svg| /blocks/3050212/svg
 **/projects** | All projects as array
 /projects/:id |A project by id | /projects/railwaymap
 /projects/:id/:picId | A picture by id by project id | /projects/railwaymap/pic1.png
