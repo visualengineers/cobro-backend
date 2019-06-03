@@ -18,13 +18,13 @@ router.get('/blocks', function (req, res, next) {
     res.status(200).json(blocks)
 })
 
-/* A block by id "/blocks/3030512" */
+/* A block by id "/blocks/3050212" */
 router.get('/blocks/:id', function (req, res) {
     const key = req.params.id
     res.status(200).json(blocks.find(r => r.id == key))
 })
 
-/* A picture of a block by id and png or svg "/blocks/3030512/svg"  */
+/* A picture of a block by id and png or svg "/blocks/3050212/svg"  */
 router.get('/blocks/:id/:pic', function (req, res) {
     const key = req.params.id
     const pic = req.params.pic
@@ -122,8 +122,21 @@ router.get('/patterns/:id', function (req, res) {
     res.status(200).json(JSON.parse(fs.readFileSync("./public/cobro-data/_patterns/" + key + ".json", "utf8")))
 });
 
-/* A schema by id "/schema/projects" */
-router.get('/schema/:id', function (req, res) {
+/* All schemas as an array "/schemas" */
+router.get('/schemas', function (req, res) {
+    var temp = fs.readdirSync('./public/cobro-data/_schema', "utf8", true);
+    var items = []
+    var i
+    for (i = 0; i < temp.length; i++) {
+        temp[i] = temp[i].split(".")
+        if (temp[i][1] == "schema")
+            items.push(temp[i][0])
+    }
+    res.status(200).json(items);
+});
+
+/* A schema by id "/schemas/project" */
+router.get('/schemas/:id', function (req, res) {
     const key = req.params.id
     res.status(200).json(JSON.parse(fs.readFileSync("./public/cobro-data/_schema/" + key + ".schema.json", "utf8")))
 })

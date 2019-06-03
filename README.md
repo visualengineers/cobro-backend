@@ -55,5 +55,5 @@ Request | Response | Example
 /constructionplans/:id |A constructionplan by id | /constructionplans/cp001
 **/patterns** |All patterns as an array |
 /patterns/:id | A pattern by id | /patterns/streetmap
-**/schema/:id** |A schema by id | /schema/project
-
+**/schemas** |All schemas as an array | /schemas
+/schemas/:id |A schema by id | /schemas/project
