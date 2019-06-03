@@ -46,12 +46,28 @@ router.get('/projects/:id', function (req, res) {
     var project = JSON.parse(fs.readFileSync("./public/cobro-data/projects/" + key + "/project.json", "utf8"))
     var key = project.constructionplan
     var cp = JSON.parse(fs.readFileSync("./public/cobro-data/_constructionplans/" + key + ".json", "utf8"))
-    var i
+    var i, j
     for (i = 0; i < cp.pattern.length; i++) {
         var key = cp.pattern[i]
-        cp.pattern[i] = JSON.parse(fs.readFileSync("./public/cobro-data/_patterns/" + key + ".json", "utf8"))
+        var pattern = JSON.parse(fs.readFileSync("./public/cobro-data/_patterns/" + key + ".json", "utf8"))
+        //WHAT substitution 
+        for (j = 0; j < pattern.what.length; j++) {
+            key = pattern.what[j]
+            pattern.what[j] = blocks.find(r => r.id == key)
+        }
+        //WHY substitution 
+        for (j = 0; j < pattern.why.length; j++) {
+            key = pattern.why[j]
+            pattern.why[j] = blocks.find(r => r.id == key)
+        }
+        //HOW substitution 
+        for (j = 0; j < pattern.how.length; j++) {
+            key = pattern.how[j]
+            pattern.how[j] = blocks.find(r => r.id == key)
+        }
+        cp.pattern[i] = pattern
     }
-    
+
     project.constructionplan = cp
 
 
