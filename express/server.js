@@ -6,7 +6,7 @@ const bodyParser = require('body-parser');
 
 var data = require("../data")
 
-app.use(express.static('public'))
+app.use(express.static('../public'))
 app.use('*',cors())
 app.use('./data', data)
 
