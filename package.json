@@ -4,6 +4,7 @@
     "description": "Backend for the Construction Kit Browser for Data Visualizations.",
     "main": "app.js",
     "scripts": {
+        "build": "netlify-lambda build express",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "repository": {
