@@ -17,6 +17,9 @@
         "cors": "^2.8.5",
         "express": "^4.17.0",
         "express-generator": "^4.16.1",
-        "jsonschema": "^1.2.4"
+        "jsonschema": "^1.2.4",
+        "body-parser": "^1.18.3",
+        "netlify-lambda": "^0.4.0",
+        "serverless-http": "^1.6.0"
     }
 }
