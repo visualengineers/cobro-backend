@@ -8,7 +8,7 @@ var data = require("./data")
 
 app.use(express.static('public'))
 app.use('*',cors())
-app.use('/data', data)
+app.use('../data', data)
 
 app.use(bodyParser.json());
 app.use('/.netlify/functions/server', router);  // path must route to lambda
