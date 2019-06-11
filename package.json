@@ -12,7 +12,7 @@
         "url": "git+https://github.com/visualengineers/cobro-backend.git"
     },
     "author": "tobiasrother",
-    "license": "GPL",
+    "license": "GPL-3.0-only",
     "dependencies": {
         "cors": "^2.8.5",
         "express": "^4.17.0",
