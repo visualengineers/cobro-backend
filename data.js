@@ -8,6 +8,10 @@ var dataPath = __dirname + '/public/cobro-data';
 var fs = require('fs');
 const blocks = JSON.parse(fs.readFileSync(dataPath + '/_assets/blocks/blocks.json', 'utf8'));
 
+router.use(function timeLog(req, res, next) {
+    console.log('Time: ', Date.now(), 'Req: ' + req.originalUrl) // Prototyp Logging
+    next()
+})
 
 /**
  * 
@@ -146,7 +150,7 @@ router.get('/projects/:id', function (req, res) {
         var project = GetProject(key, 'all')
     } catch (error) {
         res.status(404).send('Not Found')
-    }finally{
+    } finally {
         res.status(200).send(project)
     }
 })
@@ -186,7 +190,7 @@ router.get('/constructionplans/:id', function (req, res) {
         var cp = JSON.parse(fs.readFileSync(dataPath + '/_constructionplans/' + key + '.json', 'utf8'))
     } catch (error) {
         res.status(404).send('Not Found')
-    }finally{
+    } finally {
         res.status(200).json(cp)
     }
 });
@@ -211,7 +215,7 @@ router.get('/patterns/:id', function (req, res) {
         var pattern = JSON.parse(fs.readFileSync(dataPath + '/_patterns/' + key + '.json', 'utf8'))
     } catch (error) {
         res.status(404).send('Not Found')
-    }finally{
+    } finally {
         if (pattern)
             res.status(200).json(pattern)
     }
