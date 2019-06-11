@@ -35,7 +35,12 @@ function GetBlock(id, format) {
             var svg = encodeURI(GetBlock(id, 'svg'))
             svg = JSON.parse('{"svg": "' + svg + '"}')
             var plainblock = GetBlock(id, 'plain')
-            block = Object.assign(svg, plainblock)
+            if (plainblock)
+                block = Object.assign(svg, plainblock)
+            else
+                return null
+        } catch (error) {
+            return null
         } finally {
             return block
         }
@@ -84,10 +89,9 @@ function GetProject(id, format) {
                 }
                 project.constructionplan = cp
             }
-        } catch(error){
-            console.log(error)
+        } catch (error) {
             return null
-        } 
+        }
         finally {
             return project
         }
@@ -108,7 +112,13 @@ router.get('/blocks', function (req, res, next) {
 
 /* A block by id "/blocks/3050212" */
 router.get('/blocks/:id', function (req, res) {
-    res.status(200).json(GetBlock(req.params.id, 'all'))
+    var block = GetBlock(req.params.id, 'all')
+    if (block == null) {
+        res.status(404).json('Not Found')
+    }
+    else {
+        res.status(200).json(block)
+    }
 })
 
 /* A block by id and format (plain/svg/png) "/blocks/3050212/svg"  */
@@ -132,16 +142,28 @@ router.get('/projects', function (req, res, next) {
 /* A project by id "/projects/railwaymap" */
 router.get('/projects/:id', function (req, res) {
     var key = req.params.id
-    res.status(200).send(GetProject(key,'all'))
+    try {
+        var project = GetProject(key, 'all')
+    } catch (error) {
+        res.status(404).send('Not Found')
+    }finally{
+        res.status(200).send(project)
+    }
 })
 
 /* A picture by id by project id "/projects/railwaymap/pic1.png" */
 router.get('/projects/:id/:picId', function (req, res) {
     const key = req.params.id
     const pic = req.params.picId
-    //pic = fs.readFileSync(dataPath + "/projects/" + key +"/"+ pic, "utf8")
-    res.status(200).send(fs.readFileSync(dataPath + '/projects/' + key + '/' + pic, 'base64'))
-    //res.status(404).send("file not found")
+    try {
+        var img = fs.readFileSync(dataPath + '/projects/' + key + '/' + pic, 'base64')
+    } catch (error) {
+        res.status(404).send('Not Found')
+    }
+    finally {
+        if (img)
+            res.status(200).send(img)
+    }
 });
 
 /* All constructionplans as an array "/constructionplans" */
@@ -160,7 +182,13 @@ router.get('/constructionplans', function (req, res) {
 /*A constructionplan by id "/constructionplans/cp001" */
 router.get('/constructionplans/:id', function (req, res) {
     const key = req.params.id
-    res.status(200).json(JSON.parse(fs.readFileSync(dataPath + '/_constructionplans/' + key + '.json', 'utf8')))
+    try {
+        var cp = JSON.parse(fs.readFileSync(dataPath + '/_constructionplans/' + key + '.json', 'utf8'))
+    } catch (error) {
+        res.status(404).send('Not Found')
+    }finally{
+        res.status(200).json(cp)
+    }
 });
 
 /* All patterns as an array "/patterns" */
@@ -179,26 +207,46 @@ router.get('/patterns', function (req, res) {
 /*A pattern by id "/patterns/streetmap" */
 router.get('/patterns/:id', function (req, res) {
     const key = req.params.id
-    res.status(200).json(JSON.parse(fs.readFileSync(dataPath + '/_patterns/' + key + '.json', 'utf8')))
+    try {
+        var pattern = JSON.parse(fs.readFileSync(dataPath + '/_patterns/' + key + '.json', 'utf8'))
+    } catch (error) {
+        res.status(404).send('Not Found')
+    }finally{
+        if (pattern)
+            res.status(200).json(pattern)
+    }
 });
 
 /* All schemas as an array "/schemas" */
 router.get('/schemas', function (req, res) {
-    var temp = fs.readdirSync(dataPath + '/_schema', 'utf8', true);
-    var items = []
-    var i
-    for (i = 0; i < temp.length; i++) {
-        temp[i] = temp[i].split('.')
-        if (temp[i][1] == 'schema')
-            items.push(temp[i][0])
+    try {
+        var temp = fs.readdirSync(dataPath + '/_schema', 'utf8', true);
+        var items = []
+        var i
+        for (i = 0; i < temp.length; i++) {
+            temp[i] = temp[i].split('.')
+            if (temp[i][1] == 'schema')
+                items.push(temp[i][0])
+        }
     }
-    res.status(200).json(items);
+    catch (error) {
+        res.status(404).json('Not Found');
+    }
+    finally {
+        res.status(200).json(items);
+    }
 });
 
 /* A schema by id "/schemas/project" */
 router.get('/schemas/:id', function (req, res) {
     const key = req.params.id
-    res.status(200).json(JSON.parse(fs.readFileSync(dataPath + '/_schema/' + key + '.schema.json', 'utf8')))
+    try {
+        var schema = JSON.parse(fs.readFileSync(dataPath + '/_schema/' + key + '.schema.json', 'utf8'))
+    } catch (error) {
+        res.status(404).json('Not Found')
+    } finally {
+        res.status(200).json(schema)
+    }
 })
 
 module.exports = router;
