@@ -3,7 +3,7 @@ var router = express.Router();
 
 var Validator = require('jsonschema').Validator;
 var v = new Validator();
-var dataPath = __dirname + './public/cobro-data';
+var dataPath = __dirname + '/public/cobro-data';
 
 var fs = require('fs');
 var blocks = JSON.parse(fs.readFileSync(dataPath + '/_assets/blocks/blocks.json', 'utf8'));
