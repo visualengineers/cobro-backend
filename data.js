@@ -85,12 +85,12 @@ router.get('/projects/:id', function (req, res) {
         //WHAT substitution 
         for (j = 0; j < pattern.what.length; j++) {
             key = pattern.what[j]
-            pattern.what[j] = blocks.find(r => r.id == key)
+            pattern.what[j] =  GetBlock(key,'plain')
         }
         //WHY substitution 
         for (j = 0; j < pattern.why.length; j++) {
             key = pattern.why[j]
-            pattern.why[j] = blocks.find(r => r.id == key)
+            pattern.why[j] =  GetBlock(key,'plain')
         }
         //HOW substitution 
         for (j = 0; j < pattern.how.length; j++) {
