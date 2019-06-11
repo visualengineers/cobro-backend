@@ -11,31 +11,88 @@ const blocks = JSON.parse(fs.readFileSync(dataPath + '/_assets/blocks/blocks.jso
 
 /**
  * 
- * @param {id of the block} id 
- * @param {which information shoud be included: all / plain / svg / png} format 
+ * @param {int} id id of the block
+ * @param {string} format which information shoud be included: all / plain / svg / png
  */
 function GetBlock(id, format) {
     var block
     if (format == 'png' || format == 'svg') {
         try {
             block = fs.readFileSync(dataPath + '/_assets/icons/icon_' + id + '.' + format, 'utf8')
-        } finally { return block }
+        } finally {
+            return block
+        }
     }
     else if (format == 'plain') {
         try {
             block = blocks.find(r => r.id == id)
-        } finally { return block }
+        } finally {
+            return block
+        }
     }
     else if (format == 'all') {
         try {
             var svg = encodeURI(GetBlock(id, 'svg'))
             svg = JSON.parse('{"svg": "' + svg + '"}')
-            var plainblock = GetBlock(id, 'plain')    
+            var plainblock = GetBlock(id, 'plain')
             block = Object.assign(svg, plainblock)
-        } finally{
+        } finally {
             return block
         }
     }
+    else {
+        return null
+    }
+}
+
+/**
+ * 
+ * @param {string} id id of the project
+ * @param {string} format which information shoud be included: all / plain or picId
+ */
+function GetProject(id, format) {
+    var project
+    var cp
+    var key
+    var i, j
+
+    if (format == 'all' | format == 'plain') {
+        try {
+            project = JSON.parse(fs.readFileSync(dataPath + '/projects/' + id + '/project.json', 'utf8'))
+            if (format == 'all') {
+                key = project.constructionplan
+                cp = JSON.parse(fs.readFileSync(dataPath + '/_constructionplans/' + key + '.json', 'utf8'))
+                for (i = 0; i < cp.pattern.length; i++) {
+                    var key = cp.pattern[i]
+                    var pattern = JSON.parse(fs.readFileSync(dataPath + '/_patterns/' + key + '.json', 'utf8'))
+                    //WHAT substitution 
+                    for (j = 0; j < pattern.what.length; j++) {
+                        key = pattern.what[j]
+                        pattern.what[j] = GetBlock(key, 'plain')
+                    }
+                    //WHY substitution 
+                    for (j = 0; j < pattern.why.length; j++) {
+                        key = pattern.why[j]
+                        pattern.why[j] = GetBlock(key, 'plain')
+                    }
+                    //HOW substitution 
+                    for (j = 0; j < pattern.how.length; j++) {
+                        key = pattern.how[j]
+                        pattern.how[j] = GetBlock(key, 'all')
+                    }
+                    cp.pattern[i] = pattern
+                }
+                project.constructionplan = cp
+            }
+        } catch(error){
+            console.log(error)
+            return null
+        } 
+        finally {
+            return project
+        }
+    }
+
 }
 
 
@@ -75,36 +132,7 @@ router.get('/projects', function (req, res, next) {
 /* A project by id "/projects/railwaymap" */
 router.get('/projects/:id', function (req, res) {
     var key = req.params.id
-    var project = JSON.parse(fs.readFileSync(dataPath + '/projects/' + key + '/project.json', 'utf8'))
-    var key = project.constructionplan
-    var cp = JSON.parse(fs.readFileSync(dataPath + '/_constructionplans/' + key + '.json', 'utf8'))
-    var i, j
-    for (i = 0; i < cp.pattern.length; i++) {
-        var key = cp.pattern[i]
-        var pattern = JSON.parse(fs.readFileSync(dataPath + '/_patterns/' + key + '.json', 'utf8'))
-        //WHAT substitution 
-        for (j = 0; j < pattern.what.length; j++) {
-            key = pattern.what[j]
-            pattern.what[j] =  GetBlock(key,'plain')
-        }
-        //WHY substitution 
-        for (j = 0; j < pattern.why.length; j++) {
-            key = pattern.why[j]
-            pattern.why[j] =  GetBlock(key,'plain')
-        }
-        //HOW substitution 
-        for (j = 0; j < pattern.how.length; j++) {
-            key = pattern.how[j]
-            pattern.how[j] = GetBlock(key,'all')
-        }
-        cp.pattern[i] = pattern
-    }
-
-    project.constructionplan = cp
-
-
-    res.status(200).send(project)
-
+    res.status(200).send(GetProject(key,'all'))
 })
 
 /* A picture by id by project id "/projects/railwaymap/pic1.png" */
