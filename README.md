@@ -47,7 +47,7 @@ Request | Response | Example
 ---------|---------|-------
 **/blocks** | All blocks as array 
 /blocks/:id |A block by id   |/blocks/3050212
-/blocks/:id/:pic | A picture of a block by id and png or svg| /blocks/3050212/svg
+/blocks/:id/:format | a block by id and a format (all/plain/svg/png) | /blocks/3050212/svg
 **/projects** | All projects as array
 /projects/:id |A project by id | /projects/railwaymap
 /projects/:id/:picId | A picture by id by project id | /projects/railwaymap/pic1.png

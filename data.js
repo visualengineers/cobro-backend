@@ -6,7 +6,37 @@ var v = new Validator();
 var dataPath = __dirname + '/public/cobro-data';
 
 var fs = require('fs');
-var blocks = JSON.parse(fs.readFileSync(dataPath + '/_assets/blocks/blocks.json', 'utf8'));
+const blocks = JSON.parse(fs.readFileSync(dataPath + '/_assets/blocks/blocks.json', 'utf8'));
+
+
+/**
+ * 
+ * @param {id of the block} id 
+ * @param {which information shoud be included: all / plain / svg / png} format 
+ */
+function GetBlock(id, format) {
+    var block
+    if (format == 'png' || format == 'svg') {
+        try {
+            block = fs.readFileSync(dataPath + '/_assets/icons/icon_' + id + '.' + format, 'utf8')
+        } finally { return block }
+    }
+    else if (format == 'plain') {
+        try {
+            block = blocks.find(r => r.id == id)
+        } finally { return block }
+    }
+    else if (format == 'all') {
+        try {
+            var svg = encodeURI(GetBlock(id, 'svg'))
+            svg = JSON.parse('{"svg": "' + svg + '"}')
+            var plainblock = GetBlock(id, 'plain')    
+            block = Object.assign(svg, plainblock)
+        } finally{
+            return block
+        }
+    }
+}
 
 
 // define the home page route
@@ -21,20 +51,17 @@ router.get('/blocks', function (req, res, next) {
 
 /* A block by id "/blocks/3050212" */
 router.get('/blocks/:id', function (req, res) {
-    const key = req.params.id
-    var block = blocks.find(r => r.id == key)
-    var svg = encodeURI(fs.readFileSync(dataPath + '/_assets/icons/icon_' + key + '.svg', 'utf8'))
-    svg = JSON.parse('{"svg": "' + svg + '"}')
-    Object.assign(block, svg);
-    res.status(200).json(block)
+    res.status(200).json(GetBlock(req.params.id, 'all'))
 })
 
-/* A picture of a block by id and png or svg "/blocks/3050212/svg"  */
-router.get('/blocks/:id/:pic', function (req, res) {
+/* A block by id and format (plain/svg/png) "/blocks/3050212/svg"  */
+router.get('/blocks/:id/:format', function (req, res) {
     const key = req.params.id
-    const pic = req.params.pic
-    if (pic == 'png' || pic == 'svg')
-        res.status(200).send(fs.readFileSync(dataPath + '/_assets/icons/icon_' + key + '.' + pic, 'utf8'))
+    const format = req.params.format
+
+    var block = GetBlock(key, format)
+    if (block)
+        res.status(200).send(block)
     else
         res.status(406).send('Not Acceptable')
 });
@@ -68,13 +95,7 @@ router.get('/projects/:id', function (req, res) {
         //HOW substitution 
         for (j = 0; j < pattern.how.length; j++) {
             key = pattern.how[j]
-
-            var block = blocks.find(r => r.id == key)
-            var svg = encodeURI(fs.readFileSync(dataPath + '/_assets/icons/icon_' + key + '.svg', 'utf8'))
-            svg = JSON.parse('{"svg": "' + svg + '"}')
-            Object.assign(block, svg);
-
-            pattern.how[j] = block
+            pattern.how[j] = GetBlock(key,'all')
         }
         cp.pattern[i] = pattern
     }
