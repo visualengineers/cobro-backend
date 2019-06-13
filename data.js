@@ -87,7 +87,7 @@ function GetProject(id, format) {
                     //HOW substitution 
                     for (j = 0; j < pattern.how.length; j++) {
                         key = pattern.how[j]
-                        pattern.how[j] = GetBlock(key, 'all')
+                        pattern.how[j] = GetBlock(key, 'plain')
                     }
                     cp.pattern[i] = pattern
                 }
