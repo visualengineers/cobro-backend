@@ -4,6 +4,9 @@ var router = express.Router();
 var Validator = require('jsonschema').Validator;
 var v = new Validator();
 var dataPath = __dirname + '/public/cobro-data';
+var ip = '127.0.0.1'
+var port = '3000'
+var rooturl = 'http://' + ip + ':' + port + '/cobro-data'
 
 var fs = require('fs');
 const blocks = JSON.parse(fs.readFileSync(dataPath + '/_assets/blocks/blocks.json', 'utf8'));
@@ -34,7 +37,7 @@ function GetBlock(id, format) {
             return block
         }
     }
-    else if (format == 'all') {
+    else if (format == 'complete') {
         try {
             var svg = encodeURI(GetBlock(id, 'svg'))
             svg = JSON.parse('{"svg": "' + svg + '"}')
@@ -57,7 +60,7 @@ function GetBlock(id, format) {
 /**
  * 
  * @param {string} id id of the project
- * @param {string} format which information shoud be included: all / plain or picId
+ * @param {string} format which information shoud be included: complete / default or blocks / plain / constructionplans / patterns / pictures
  */
 function GetProject(id, format) {
     var project
@@ -65,31 +68,40 @@ function GetProject(id, format) {
     var key
     var i, j
 
-    if (format == 'all' | format == 'plain') {
+    if (format == 'complete' | format == 'default' | format == 'plain' | format == 'constructionplans' | format == 'patterns' | format == 'pictures') {
         try {
             project = JSON.parse(fs.readFileSync(dataPath + '/projects/' + id + '/project.json', 'utf8'))
-            if (format == 'all') {
+            if (format == 'pictures')
+                project = project.thumbnail
+            if (format != 'plain') {
                 key = project.constructionplan
                 cp = JSON.parse(fs.readFileSync(dataPath + '/_constructionplans/' + key + '.json', 'utf8'))
-                for (i = 0; i < cp.pattern.length; i++) {
-                    var key = cp.pattern[i]
-                    var pattern = JSON.parse(fs.readFileSync(dataPath + '/_patterns/' + key + '.json', 'utf8'))
-                    //WHAT substitution 
-                    for (j = 0; j < pattern.what.length; j++) {
-                        key = pattern.what[j]
-                        pattern.what[j] = GetBlock(key, 'plain')
+                if (format != 'constructionplans') {
+                    for (i = 0; i < cp.pattern.length; i++) {
+                        var key = cp.pattern[i]
+                        var pattern = JSON.parse(fs.readFileSync(dataPath + '/_patterns/' + key + '.json', 'utf8'))
+                        if (format != 'patterns') {
+                            //WHAT substitution 
+                            for (j = 0; j < pattern.what.length; j++) {
+                                key = pattern.what[j]
+                                pattern.what[j] = GetBlock(key, 'plain')
+                            }
+                            //WHY substitution 
+                            for (j = 0; j < pattern.why.length; j++) {
+                                key = pattern.why[j]
+                                pattern.why[j] = GetBlock(key, 'plain')
+                            }
+                            //HOW substitution 
+                            for (j = 0; j < pattern.how.length; j++) {
+                                key = pattern.how[j]
+                                if (format == 'complete')
+                                    pattern.how[j] = GetBlock(key, 'complete')
+                                else
+                                    pattern.how[j] = GetBlock(key, 'plain')
+                            }
+                        }
+                        cp.pattern[i] = pattern
                     }
-                    //WHY substitution 
-                    for (j = 0; j < pattern.why.length; j++) {
-                        key = pattern.why[j]
-                        pattern.why[j] = GetBlock(key, 'plain')
-                    }
-                    //HOW substitution 
-                    for (j = 0; j < pattern.how.length; j++) {
-                        key = pattern.how[j]
-                        pattern.how[j] = GetBlock(key, 'plain')
-                    }
-                    cp.pattern[i] = pattern
                 }
                 project.constructionplan = cp
             }
@@ -100,6 +112,7 @@ function GetProject(id, format) {
             return project
         }
     }
+    else { return null }
 
 }
 
@@ -116,7 +129,7 @@ router.get('/blocks', function (req, res, next) {
 
 /* A block by id "/blocks/3050212" */
 router.get('/blocks/:id', function (req, res) {
-    var block = GetBlock(req.params.id, 'all')
+    var block = GetBlock(req.params.id, 'complete')
     if (block == null) {
         res.status(404).json('Not Found')
     }
@@ -147,28 +160,58 @@ router.get('/projects', function (req, res, next) {
 router.get('/projects/:id', function (req, res) {
     var key = req.params.id
     try {
-        var project = GetProject(key, 'all')
+        var project = GetProject(key, 'default')
     } catch (error) {
         res.status(404).send('Not Found')
     } finally {
-        res.status(200).send(project)
+        if (project)
+            res.status(200).send(project)
+        else
+            res.status(404).send('Not Found')
+    }
+})
+
+
+//format: complete / default / plain / constructionplans / patterns /pictures
+router.get('/projects/:id/:format', function (req, res, next) {
+    var key = req.params.id
+    var format = req.params.format
+    var project
+    try {
+        if (format == 'blocks')
+            format = 'default'
+        project = GetProject(key, format)
+    } catch (error) {
+        res.status(404).send('Not Found')
+    } finally {
+        if (project)
+            res.status(200).send(project)
+        else
+            res.status(404).send('Not Found')
     }
 })
 
 /* A picture by id by project id "/projects/railwaymap/pic1.png" */
-router.get('/projects/:id/:picId', function (req, res) {
+router.get('/projects/:id/pictures/:picId', function (req, res, next) {
     const key = req.params.id
     const pic = req.params.picId
     try {
+        var imgurl = rooturl + '/projects/' + key + '/' + pic
         var img = fs.readFileSync(dataPath + '/projects/' + key + '/' + pic, 'base64')
+        
     } catch (error) {
-        res.status(404).send('Not Found')
+        console.log(error)
+        console.log(imgurl)
     }
     finally {
-        if (img)
-            res.status(200).send(img)
+        if (img) {
+            res.status(200).json(imgurl)
+        }
+        else
+            res.status(404).send('Not Found')
     }
-});
+})
+
 
 /* All constructionplans as an array "/constructionplans" */
 router.get('/constructionplans', function (req, res) {
