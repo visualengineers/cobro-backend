@@ -1,6 +1,5 @@
 var express = require('express');
 var router = express.Router();
-
 var Validator = require('jsonschema').Validator;
 var v = new Validator();
 var dataPath = __dirname + '/public/cobro-data';
@@ -10,11 +9,6 @@ var rooturl = 'http://' + ip + ':' + port + '/cobro-data'
 
 var fs = require('fs');
 const blocks = JSON.parse(fs.readFileSync(dataPath + '/_assets/blocks/blocks.json', 'utf8'));
-
-router.use(function timeLog(req, res, next) {
-    console.log('Time: ', Date.now(), 'Req: ' + req.originalUrl) // Prototyp Logging
-    next()
-})
 
 /**
  * 
@@ -106,6 +100,7 @@ function GetProject(id, format) {
                 project.constructionplan = cp
             }
         } catch (error) {
+            new Error(error)
             return null
         }
         finally {
@@ -129,12 +124,13 @@ router.get('/blocks', function (req, res, next) {
 
 /* A block by id "/blocks/3050212" */
 router.get('/blocks/:id', function (req, res) {
-    var block = GetBlock(req.params.id, 'complete')
-    if (block == null) {
-        res.status(404).json('Not Found')
-    }
-    else {
-        res.status(200).json(block)
+    try {
+        var block = GetBlock(req.params.id, 'complete')
+    } catch (error) {
+        res.status(404).send('Not Found')
+    } finally {
+        if (block)
+            res.status(200).json(block)
     }
 })
 
@@ -143,17 +139,27 @@ router.get('/blocks/:id/:format', function (req, res) {
     const key = req.params.id
     const format = req.params.format
 
-    var block = GetBlock(key, format)
-    if (block)
-        res.status(200).send(block)
-    else
-        res.status(406).send('Not Acceptable')
+    try {
+        var block = GetBlock(key, format)
+    } catch (error) {
+        res.status(404).send('Not Found')
+    } finally {
+        if (block)
+            res.status(200).json(block)
+    }
 });
 
 /* All projects as array */
 router.get('/projects', function (req, res, next) {
-    var items = fs.readdirSync(dataPath + '/projects');
-    res.status(200).json(items);
+
+    try {
+        var items = fs.readdirSync(dataPath + '/projects');
+    } catch (error) {
+        res.status(404).send('Not Found')
+    } finally {
+        if (items)
+            res.status(200).json(items)
+    }
 })
 
 /* A project by id "/projects/railwaymap" */
@@ -198,10 +204,9 @@ router.get('/projects/:id/pictures/:picId', function (req, res, next) {
     try {
         var imgurl = rooturl + '/projects/' + key + '/' + pic
         var img = fs.readFileSync(dataPath + '/projects/' + key + '/' + pic, 'base64')
-        
+
     } catch (error) {
-        console.log(error)
-        console.log(imgurl)
+        res.status(404).send('Not Found')
     }
     finally {
         if (img) {
@@ -215,15 +220,23 @@ router.get('/projects/:id/pictures/:picId', function (req, res, next) {
 
 /* All constructionplans as an array "/constructionplans" */
 router.get('/constructionplans', function (req, res) {
-    var temp = fs.readdirSync(dataPath + '/_constructionplans', 'utf8', true);
     var items = []
     var i
-    for (i = 0; i < temp.length; i++) {
-        temp[i] = temp[i].split('.')
-        if (temp[i][1] == 'json')
-            items.push(temp[i][0])
+    try {
+        var temp = fs.readdirSync(dataPath + '/_constructionplans', 'utf8', true);
+        for (i = 0; i < temp.length; i++) {
+            temp[i] = temp[i].split('.')
+            if (temp[i][1] == 'json')
+                items.push(temp[i][0])
+        }
+    } catch (error) {
+        res.status(404).send('Not Found')
+    } finally {
+        if (items)
+            res.status(200).json(items);
+        else
+            res.status(404).send('Not Found')
     }
-    res.status(200).json(items);
 });
 
 /*A constructionplan by id "/constructionplans/cp001" */
@@ -234,21 +247,34 @@ router.get('/constructionplans/:id', function (req, res) {
     } catch (error) {
         res.status(404).send('Not Found')
     } finally {
-        res.status(200).json(cp)
+        if (cp)
+            res.status(200).json(cp)
+        else
+            res.status(404).send('Not Found')
+
     }
 });
 
 /* All patterns as an array "/patterns" */
 router.get('/patterns', function (req, res) {
-    var temp = fs.readdirSync(dataPath + '/_patterns', 'utf8', true);
     var items = []
     var i
-    for (i = 0; i < temp.length; i++) {
-        temp[i] = temp[i].split('.')
-        if (temp[i][1] == 'json')
-            items.push(temp[i][0])
+    try {
+        var temp = fs.readdirSync(dataPath + '/_patterns', 'utf8', true);
+        for (i = 0; i < temp.length; i++) {
+            temp[i] = temp[i].split('.')
+            if (temp[i][1] == 'json')
+                items.push(temp[i][0])
+        }
+    } catch (error) {
+        res.status(404).send('Not Found')
+    } finally {
+        if (items)
+            res.status(200).json(items);
+        else
+            res.status(404).send('Not Found')
     }
-    res.status(200).json(items);
+
 });
 
 /*A pattern by id "/patterns/streetmap" */
@@ -261,6 +287,9 @@ router.get('/patterns/:id', function (req, res) {
     } finally {
         if (pattern)
             res.status(200).json(pattern)
+        else
+            res.status(404).send('Not Found')
+
     }
 });
 
@@ -277,10 +306,14 @@ router.get('/schemas', function (req, res) {
         }
     }
     catch (error) {
-        res.status(404).json('Not Found');
+        res.status(404).send('Not Found')
     }
     finally {
-        res.status(200).json(items);
+        if (items)
+            res.status(200).json(items);
+        else
+            res.status(404).send('Not Found')
+
     }
 });
 
@@ -290,9 +323,13 @@ router.get('/schemas/:id', function (req, res) {
     try {
         var schema = JSON.parse(fs.readFileSync(dataPath + '/_schema/' + key + '.schema.json', 'utf8'))
     } catch (error) {
-        res.status(404).json('Not Found')
+        res.status(404).send('Not Found')
     } finally {
-        res.status(200).json(schema)
+        if (schema)
+            res.status(200).json(schema)
+        else
+            res.status(404).send('Not Found')
+
     }
 })
 
