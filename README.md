@@ -59,3 +59,5 @@ Request | Response | Example
 /patterns/:id | A pattern by id | /patterns/streetmap
 **/schemas** |All schemas as an array | /schemas
 /schemas/:id |A schema by id | /schemas/project
+
+With */projects/:id/complete* and */blocks/:id/complete*, in addition to the standard information, the "svgs" of the blocks are also sent via JSON. This requires encoding the string with [encodeURI()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURI), which can be decoded with [decodeURI()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/decodeURI).
