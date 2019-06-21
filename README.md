@@ -31,12 +31,12 @@ Execute `npm install` in repository to install dependencies (e.g. express, JSONs
 Start the Server with 
 
 ```
-SET DEBUG=myApp:* | npm run devstart
+SET DEBUG=cobro-backend:* | npm run devstart
 ```
 or
 
 ```
-SET DEBUG=myApp:* | npm start
+SET DEBUG=cobro-backend:* | npm start
 ```
 
 
