@@ -1,30 +1,8 @@
-var express = require('express')
-var winston = require('winston')
-var router = express.Router()
+var express = require('express');
+var router = express.Router();
+var winston = require('../config/winston')
 
-
-const logger = winston.createLogger({
-    transports: [
-        new winston.transports.Console({ level: 'error' }),
-        new winston.transports.File({ filename: './logs/error.log', level: 'error' }),
-        new winston.transports.File({ filename: './logs/combined.log' })
-    ],
-    format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.colorize(),
-        winston.format.json()
-    ),
-    meta: true,
-    msg: "HTTP {{req.method}} {{req.url}}",
-    expressFormat: true, 
-    colorize: false, 
-    ignoreRoute: function (req, res) { return false; }
-})
-
-
-var Validator = require('jsonschema').Validator;
-var v = new Validator();
-var dataPath = __dirname + '/public/cobro-data';
+var dataPath = './public/cobro-data';
 var ip = '127.0.0.1'
 var port = '3000'
 var rooturl = 'http://' + ip + ':' + port + '/cobro-data'
@@ -44,7 +22,6 @@ function GetBlock(id, format) {
             block = fs.readFileSync(dataPath + '/_assets/icons/icon_' + id + '.' + format, 'utf8')
         }
         catch{
-            logger.error(error)
         } finally {
             return block
         }
@@ -55,7 +32,6 @@ function GetBlock(id, format) {
             block = rooturl + '/_assets/icons/icon_' + id + '.png'
         }
         catch{
-            logger.error(error)
         } finally {
             return block
         }
@@ -65,7 +41,6 @@ function GetBlock(id, format) {
             block = blocks.find(r => r.id == id)
         }
         catch{
-            logger.error(error)
         } finally {
             return block
         }
@@ -80,7 +55,6 @@ function GetBlock(id, format) {
             else
                 return null
         } catch (error) {
-            logger.error(error)
             return null
         } finally {
             return block
@@ -140,7 +114,6 @@ function GetProject(id, format) {
                 project.constructionplan = cp
             }
         } catch (error) {
-            logger.error(error)
             return null
         }
         finally {
@@ -154,23 +127,19 @@ function GetProject(id, format) {
 
 // define the home page route
 router.get('/', function (req, res) {
-    logger.info(req.originalUrl)
     res.status(200).send('<h1>Lorem Ipsum</h1>')
 })
 
 /* All blocks as array*/
 router.get('/blocks', function (req, res, next) {
-    logger.info(req.originalUrl)
     res.status(200).send(blocks)
 })
 
 /* A block by id "/blocks/3050212" */
 router.get('/blocks/:id', function (req, res) {
-    logger.info(req.originalUrl)
     try {
         var block = GetBlock(req.params.id, 'complete')
     } catch (error) {
-        logger.error(error)
         res.status(404).send('Not Found')
     } finally {
         if (block)
@@ -182,14 +151,12 @@ router.get('/blocks/:id', function (req, res) {
 
 /* A block by id and format (plain/svg/png) "/blocks/3050212/svg"  */
 router.get('/blocks/:id/:format', function (req, res) {
-    logger.info(req.originalUrl)
     const key = req.params.id
     const format = req.params.format
 
     try {
         var block = GetBlock(key, format)
     } catch (error) {
-        logger.error(error)
         res.status(404).send('Not Found')
     } finally {
         if (block) {
@@ -205,12 +172,9 @@ router.get('/blocks/:id/:format', function (req, res) {
 
 /* All projects as array */
 router.get('/projects', function (req, res, next) {
-    logger.info(req.originalUrl)
-
     try {
         var items = fs.readdirSync(dataPath + '/projects');
     } catch (error) {
-        logger.error(error)
         res.status(404).send('Not Found')
     } finally {
         if (items)
@@ -220,12 +184,10 @@ router.get('/projects', function (req, res, next) {
 
 /* A project by id "/projects/railwaymap" */
 router.get('/projects/:id', function (req, res) {
-    logger.info(req.originalUrl)
     var key = req.params.id
     try {
         var project = GetProject(key, 'default')
     } catch (error) {
-        logger.error(error)
         res.status(404).send('Not Found')
     } finally {
         if (project)
@@ -238,7 +200,6 @@ router.get('/projects/:id', function (req, res) {
 
 //format: complete / default / plain / constructionplans / patterns /pictures
 router.get('/projects/:id/:format', function (req, res, next) {
-    logger.info(req.originalUrl)
     var key = req.params.id
     var format = req.params.format
     var project
@@ -247,7 +208,6 @@ router.get('/projects/:id/:format', function (req, res, next) {
             format = 'default'
         project = GetProject(key, format)
     } catch (error) {
-        logger.error(error)
         res.status(404).send('Not Found')
     } finally {
         if (project)
@@ -259,7 +219,6 @@ router.get('/projects/:id/:format', function (req, res, next) {
 
 /* A picture by id by project id "/projects/railwaymap/pic1.png" */
 router.get('/projects/:id/pictures/:picId', function (req, res, next) {
-    logger.info(req.originalUrl)
     const key = req.params.id
     const pic = req.params.picId
     try {
@@ -267,7 +226,6 @@ router.get('/projects/:id/pictures/:picId', function (req, res, next) {
         var img = fs.readFileSync(dataPath + '/projects/' + key + '/' + pic, 'base64')
 
     } catch (error) {
-        logger.error(error)
         res.status(404).send('Not Found')
     }
     finally {
@@ -282,7 +240,6 @@ router.get('/projects/:id/pictures/:picId', function (req, res, next) {
 
 /* All constructionplans as an array "/constructionplans" */
 router.get('/constructionplans', function (req, res) {
-    logger.info(req.originalUrl)
     var items = []
     var i
     try {
@@ -293,7 +250,6 @@ router.get('/constructionplans', function (req, res) {
                 items.push(temp[i][0])
         }
     } catch (error) {
-        logger.error(error)
         res.status(404).send('Not Found')
     } finally {
         if (items)
@@ -305,12 +261,10 @@ router.get('/constructionplans', function (req, res) {
 
 /*A constructionplan by id "/constructionplans/cp001" */
 router.get('/constructionplans/:id', function (req, res) {
-    logger.info(req.originalUrl)
     const key = req.params.id
     try {
         var cp = JSON.parse(fs.readFileSync(dataPath + '/_constructionplans/' + key + '.json', 'utf8'))
     } catch (error) {
-        logger.error(error)
         res.status(404).send('Not Found')
     } finally {
         if (cp)
@@ -320,7 +274,6 @@ router.get('/constructionplans/:id', function (req, res) {
 
 /* All patterns as an array "/patterns" */
 router.get('/patterns', function (req, res) {
-    logger.info(req.originalUrl)
     var items = []
     var i
     try {
@@ -331,7 +284,6 @@ router.get('/patterns', function (req, res) {
                 items.push(temp[i][0])
         }
     } catch (error) {
-        logger.error(error)
         res.status(404).send('Not Found')
     } finally {
         if (items)
@@ -343,12 +295,10 @@ router.get('/patterns', function (req, res) {
 
 /*A pattern by id "/patterns/streetmap" */
 router.get('/patterns/:id', function (req, res) {
-    logger.info(req.originalUrl)
     const key = req.params.id
     try {
         var pattern = JSON.parse(fs.readFileSync(dataPath + '/_patterns/' + key + '.json', 'utf8'))
     } catch (error) {
-        logger.error(error)
         res.status(404).send('Not Found')
     } finally {
         if (pattern)
@@ -358,7 +308,6 @@ router.get('/patterns/:id', function (req, res) {
 
 /* All schemas as an array "/schemas" */
 router.get('/schemas', function (req, res) {
-    logger.info(req.originalUrl)
     try {
         var temp = fs.readdirSync(dataPath + '/_schema', 'utf8', true);
         var items = []
@@ -370,7 +319,6 @@ router.get('/schemas', function (req, res) {
         }
     }
     catch (error) {
-        logger.error(error)
         res.status(404).send('Not Found')
     }
     finally {
@@ -383,17 +331,17 @@ router.get('/schemas', function (req, res) {
 
 /* A schema by id "/schemas/project" */
 router.get('/schemas/:id', function (req, res) {
-    logger.info(req.originalUrl)
     const key = req.params.id
     try {
         var schema = JSON.parse(fs.readFileSync(dataPath + '/_schema/' + key + '.schema.json', 'utf8'))
     } catch (error) {
-        logger.error(error)
         res.status(404).send('Not Found')
     } finally {
         if (schema)
             res.status(200).json(schema)
     }
 })
+
+
 
 module.exports = router;

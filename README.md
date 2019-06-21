@@ -31,8 +31,14 @@ Execute `npm install` in repository to install dependencies (e.g. express, JSONs
 Start the Server with 
 
 ```
-node app.js
+SET DEBUG=myApp:* | npm run devstart
 ```
+or
+
+```
+SET DEBUG=myApp:* | npm start
+```
+
 
 the Server is now able to receive request on "localhost:3000/data"
 
