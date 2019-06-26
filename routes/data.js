@@ -21,7 +21,8 @@ function GetBlock(id, format) {
         try {
             block = fs.readFileSync(dataPath + '/_assets/icons/icon_' + id + '.' + format, 'utf8')
         }
-        catch{
+        catch(error){
+            winston.error(error)
         } finally {
             return block
         }
@@ -31,7 +32,8 @@ function GetBlock(id, format) {
             block = fs.readFileSync(dataPath + '/_assets/icons/icon_' + id + '.' + format, 'utf8')
             block = rooturl + '/_assets/icons/icon_' + id + '.png'
         }
-        catch{
+        catch(error){
+            winston.error(error)
         } finally {
             return block
         }
@@ -40,7 +42,8 @@ function GetBlock(id, format) {
         try {
             block = blocks.find(r => r.id == id)
         }
-        catch{
+        catch(error){
+            winston.error(error)
         } finally {
             return block
         }
@@ -55,6 +58,7 @@ function GetBlock(id, format) {
             else
                 return null
         } catch (error) {
+            winston.error(error)
             return null
         } finally {
             return block
@@ -114,6 +118,7 @@ function GetProject(id, format) {
                 project.constructionplan = cp
             }
         } catch (error) {
+            winston.error(error)
             return null
         }
         finally {
@@ -140,6 +145,7 @@ router.get('/blocks/:id', function (req, res) {
     try {
         var block = GetBlock(req.params.id, 'complete')
     } catch (error) {
+        winston.error(error)
         res.status(404).send('Not Found')
     } finally {
         if (block)
@@ -157,6 +163,7 @@ router.get('/blocks/:id/:format', function (req, res) {
     try {
         var block = GetBlock(key, format)
     } catch (error) {
+        winston.error(error)
         res.status(404).send('Not Found')
     } finally {
         if (block) {
@@ -175,6 +182,7 @@ router.get('/projects', function (req, res, next) {
     try {
         var items = fs.readdirSync(dataPath + '/projects');
     } catch (error) {
+        winston.error(error)
         res.status(404).send('Not Found')
     } finally {
         if (items)
@@ -188,6 +196,7 @@ router.get('/projects/:id', function (req, res) {
     try {
         var project = GetProject(key, 'default')
     } catch (error) {
+        winston.error('Project ' + key + ' Not Found ' + error)
         res.status(404).send('Not Found')
     } finally {
         if (project)
@@ -208,6 +217,7 @@ router.get('/projects/:id/:format', function (req, res, next) {
             format = 'default'
         project = GetProject(key, format)
     } catch (error) {
+        winston.error(error)
         res.status(404).send('Not Found')
     } finally {
         if (project)
@@ -226,14 +236,13 @@ router.get('/projects/:id/pictures/:picId', function (req, res, next) {
         var img = fs.readFileSync(dataPath + '/projects/' + key + '/' + pic, 'base64')
 
     } catch (error) {
+        winston.error('Picture: ' + pic + ' in ' + key + ' Not Found ' + error)
         res.status(404).send('Not Found')
     }
     finally {
         if (img) {
             res.status(200).json(imgurl)
         }
-        else
-            res.status(404).send('Not Found')
     }
 })
 
@@ -250,6 +259,7 @@ router.get('/constructionplans', function (req, res) {
                 items.push(temp[i][0])
         }
     } catch (error) {
+        winston.error(error)
         res.status(404).send('Not Found')
     } finally {
         if (items)
@@ -265,6 +275,7 @@ router.get('/constructionplans/:id', function (req, res) {
     try {
         var cp = JSON.parse(fs.readFileSync(dataPath + '/_constructionplans/' + key + '.json', 'utf8'))
     } catch (error) {
+        winston.error(key + ' Not Found ' + error)
         res.status(404).send('Not Found')
     } finally {
         if (cp)
@@ -284,6 +295,7 @@ router.get('/patterns', function (req, res) {
                 items.push(temp[i][0])
         }
     } catch (error) {
+        winston.error(error)
         res.status(404).send('Not Found')
     } finally {
         if (items)
@@ -299,6 +311,7 @@ router.get('/patterns/:id', function (req, res) {
     try {
         var pattern = JSON.parse(fs.readFileSync(dataPath + '/_patterns/' + key + '.json', 'utf8'))
     } catch (error) {
+        winston.error(key + ' Not Found ' + error)
         res.status(404).send('Not Found')
     } finally {
         if (pattern)
@@ -319,6 +332,7 @@ router.get('/schemas', function (req, res) {
         }
     }
     catch (error) {
+        winston.error(error)
         res.status(404).send('Not Found')
     }
     finally {
@@ -335,6 +349,7 @@ router.get('/schemas/:id', function (req, res) {
     try {
         var schema = JSON.parse(fs.readFileSync(dataPath + '/_schema/' + key + '.schema.json', 'utf8'))
     } catch (error) {
+        winston.error(key + ' Not Found ' + error)
         res.status(404).send('Not Found')
     } finally {
         if (schema)

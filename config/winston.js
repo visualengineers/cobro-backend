@@ -1,6 +1,5 @@
 var winston = require('winston')
 
-
 /**
  * set level to 
  * 0: error
@@ -10,6 +9,10 @@ var winston = require('winston')
  * 4: debug
  * 5: silly
  */
+
+const combinedlevel = process.env.NODE_LOGGING_LEVEL || 'info'
+var consolelevel = 'info'
+
 var options = {
   file_error: {
     level: 'error',
@@ -19,14 +22,14 @@ var options = {
     colorize: false,
   },
   file_combined: {
-  level: 'info',
+  level: combinedlevel,
   filename: './logs/combined.log',
   handleExceptions: true,
   json: true,
   colorize: false,
 },
   console: {
-    level: 'debug',
+    level: consolelevel,
     handleExceptions: true,
     json: false,
     colorize: true,
