@@ -49,6 +49,7 @@ A detailed documentation which requests exist and which answers the server deliv
 In general, the following requests are processed:
 All Response are in JSON (except the Request for the svg and png files) 
 
+GET Request
 Request | Response | Example
 ---------|---------|-------
 **/blocks** | All blocks as array 
@@ -66,4 +67,17 @@ Request | Response | Example
 **/schemas** |All schemas as an array | /schemas
 /schemas/:id |A schema by id | /schemas/project
 
+
 With */projects/:id/complete* and */blocks/:id/complete*, in addition to the standard information, the "svgs" of the blocks are also sent via JSON. This requires encoding the string with [encodeURI()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURI), which can be decoded with [decodeURI()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/decodeURI).
+
+
+POST Request
+Request | Header | Body
+---------|---------|-------
+**/addpattern**|Content-Type:application/json|[Pattern Schema](https://raw.githubusercontent.com/visualengineers/cobro-data/master/_schema/pattern.schema.json)
+**/addconstructionplan**|Content-Type:application/json|[Constructionplan Schema](https://raw.githubusercontent.com/visualengineers/cobro-data/master/_schema/constructionplan.schema.json)
+**/addproject**|Content-Type:application/json|[Project Schema](https://raw.githubusercontent.com/visualengineers/cobro-data/master/_schema/project.schema.json)
+
+
+[TODO] DELETE Request
+[TODO] PUT Request
