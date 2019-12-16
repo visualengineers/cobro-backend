@@ -8,9 +8,8 @@ var ip = "127.0.0.1";
 var port = "3000";
 var rooturl = "http://" + ip + ":" + port + "/cobro-data";
 
-var jsonParser = bodyParser.json()
-var urlencodedParser = bodyParser.urlencoded({ extended: false })
-
+var jsonParser = bodyParser.json();
+var urlencodedParser = bodyParser.urlencoded({ extended: false });
 
 var fs = require("fs");
 const blocks = JSON.parse(
@@ -360,59 +359,67 @@ router.get("/schemas/:id", function(req, res) {
     if (schema) res.status(200).json(schema);
   }
 });
-
+/* Add a Schema into the data folder */
 router.post("/addpattern", function(req, res) {
   try {
-    const filePath = dataPath + "/_patterns/"+req.body.id+".json";
-    fs.appendFile(filePath,JSON.stringify(req.body),function (err) {
-        if (err) throw err;
-        console.log('Saved!');
-      });
-    winston.info(req.body.id +".json created")
+    const filePath = dataPath + "/_patterns/" + req.body.id + ".json";
+    fs.appendFile(filePath, JSON.stringify(req.body), function(err) {
+      if (err) throw err;
+      console.log("Saved!");
+    });
+    winston.info(req.body.id + ".json created");
     res.status(201).send("Data recived");
   } catch (error) {
-    winston.error(error)
-    console.log(error)
+    winston.error(error);
+    console.log(error);
     res.status(500).send("Not Found");
   }
 });
-
+/* Add a constructionplan into the data folder */
 router.post("/addconstructionplan", function(req, res) {
-    try {
-        const key = req.body.id
-        const filePath = dataPath + "/_constructionplans/"+key+".json";
-      fs.appendFile(filePath,JSON.stringify(req.body),function (err) {
-          if (err) throw err;
-          console.log('Saved!');
-        });
-      winston.info(req.body.id +".json created")
-      res.status(201).send("Data recived");
-    } catch (error) {
-      winston.error(error)
-      console.log(error)
-      res.status(500).send("Not Found");
+  try {
+    const key = req.body.id;
+    const filePath = dataPath + "/_constructionplans/" + key + ".json";
+    fs.appendFile(filePath, JSON.stringify(req.body), function(err) {
+      if (err) throw err;
+      console.log("Saved!");
+    });
+    winston.info(req.body.id + ".json created");
+    res.status(201).send("Data recived");
+  } catch (error) {
+    winston.error(error);
+    console.log(error);
+    res.status(500).send("Not Found");
+  }
+});
+/* Add a project.json into his own folder */
+router.post("/addproject", function(req, res) {
+  try {
+    const filePath = dataPath + "/_patterns/project.json";
+    const dir = dataPath + "/projects/" + req.body.id;
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir);
     }
-  });
+    fs.appendFile(filePath, JSON.stringify(req.body), function(err) {
+      if (err) throw err;
+      console.log("Saved!");
+      winston.info("project " + req.body.id + " created");
+    });
 
-  router.post("/addproject", function(req, res) {
-    try {
-      const filePath = dataPath + "/_patterns/project.json";
-      const dir = dataPath+"/projects/"+req.body.id;
-      if (!fs.existsSync(dir)){
-        fs.mkdirSync(dir);
-    }
-      fs.appendFile(filePath,JSON.stringify(req.body),function (err) {
-          if (err) throw err;
-          console.log('Saved!');
-          winston.info("project "+req.body.id+" created")
-        });
-     
-      res.status(201).send("Data recived");
-    } catch (error) {
-      winston.error(error)
-      console.log(error)
-      res.status(500).send("Not Found");
-    }
-  });
+    res.status(201).send("Data recived");
+  } catch (error) {
+    winston.error(error);
+    console.log(error);
+    res.status(500).send("Not Found");
+  }
+});
+/* Add a Pic file into Project by id folder */
+router.post("/addpictures/:id", function(req, res) {
+  // project id
+  const key = req.params.id;
+  try {
+    //TODO
+  } catch (error) {}
+});
 
 module.exports = router;
